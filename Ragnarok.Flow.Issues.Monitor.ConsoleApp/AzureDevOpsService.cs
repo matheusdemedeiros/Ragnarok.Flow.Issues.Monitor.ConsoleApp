@@ -49,5 +49,10 @@
         {
             return await _api.GetIssueTitle(issueId);
         }
+
+        public async Task<DateTime?> GetIssueCreatedDate(int issueId)
+        {
+            return await _api.GetIssueCreatedDate(issueId);
+        }
     }
 }

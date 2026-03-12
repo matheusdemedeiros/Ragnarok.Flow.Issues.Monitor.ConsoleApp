@@ -5,27 +5,34 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp;
 
 public class OpenIssuesReport
 {
-    private readonly ConcurrentBag<(int DaysSinceComment, string Line)> _lines = new();
+    private readonly ConcurrentBag<(int DaysSinceComment, string Line, int IssueId)> _lines = new();
     private readonly string _azureDevOpsCollection;
     private readonly string _azureDevOpsProject;
     private readonly string _azureDevOpsBaseUrl;
+    private readonly string _areaTeam;
 
     public OpenIssuesReport(string azureDevOpsBaseUrl,
         string azureDevOpsCollection,
-        string azureDevOpsProject
+        string azureDevOpsProject,
+        string areaTeam
         )
     {
         _azureDevOpsBaseUrl = azureDevOpsBaseUrl;
         _azureDevOpsCollection = azureDevOpsCollection;
         _azureDevOpsProject = azureDevOpsProject;
+        _areaTeam = areaTeam;
     }
 
-    public void AddIssue(string title, int issueId, Comment comment)
+    public void AddIssue(string title, int issueId, Comment comment, DateTime? issueCreatedDate = null)
     {
         var author = GetAuthor(comment);
         var commentDate = GetCreationDate(comment);
         var daysSinceComment = GetCommentDays(commentDate);
         var url = GetUrl(issueId);
+
+        var createdDateDisplay = issueCreatedDate.HasValue 
+            ? $"{issueCreatedDate:dd/MM/yyyy HH:mm:ss}" 
+            : "Data indisponível";
 
         var line = new StringBuilder()
             .AppendLine($"🔹 **ISSUE #{issueId}**")
@@ -37,7 +44,9 @@ public class OpenIssuesReport
             .AppendLine("<br>")
             .AppendLine($"👤 Por: **{author}**")
             .AppendLine("<br>")
-            .AppendLine($"📅 Na data: **{commentDate:dd/MM/yyyy}**")
+            .AppendLine($"📅 Na data: **{commentDate:dd/MM/yyyy HH:mm:ss}**")
+            .AppendLine("<br>")
+            .AppendLine($"📆 **Issue criada em:** {createdDateDisplay}")
             .AppendLine("<br>")
             .AppendLine("<br>")
             .AppendLine($"🔗 Link: {url}")
@@ -46,7 +55,7 @@ public class OpenIssuesReport
             .AppendLine("<br>")
             .ToString();
 
-        _lines.Add((daysSinceComment, line));
+        _lines.Add((daysSinceComment, line, issueId));
     }
 
     public string BuildReport()
@@ -54,15 +63,37 @@ public class OpenIssuesReport
         if (_lines.IsEmpty)
             return string.Empty;
 
-        var ordered = _lines
+        var orderedIssues = _lines
             .OrderByDescending(x => x.DaysSinceComment)
+            .ToList();
+
+        var issueLines = orderedIssues
             .Select(x => x.Line)
             .ToList();
 
-        var title = "🔔 **Resumo diário das Issues**";
-        var report = string.Join("\n", ordered).Trim();
+        var issueCount = _lines.Count;
+        var oldestIssue = orderedIssues.First();
+        var newestIssue = orderedIssues.Last();
 
-        return title + "<br><br>" + report;
+        var title = "🔔 **Resumo diário das Issues**";
+        var summary = new StringBuilder()
+            .AppendLine($"👥 **Área\\Time:** {_areaTeam}")
+            .AppendLine("<br>")
+            .AppendLine("<br>")
+            .AppendLine($"📊 **Total de Issues:** {issueCount}")
+            .AppendLine("<br>")
+            .AppendLine("<br>")
+            .AppendLine($"⏰ **Issue com comentário mais antigo:** #{oldestIssue.IssueId} ({oldestIssue.DaysSinceComment} dias) - Link: {GetUrl(oldestIssue.IssueId)}")
+            .AppendLine("<br>")
+            .AppendLine("<br>")
+            .AppendLine($"⚡ **Issue com comentário mais recente:** #{newestIssue.IssueId} ({newestIssue.DaysSinceComment} dias) - Link: {GetUrl(newestIssue.IssueId)}")
+            .ToString()
+            .Trim();
+
+        var issuesTitle = "📋 **Issues Ordenadas por Tempo de Comentário**";
+        var report = string.Join("\n", issueLines).Trim();
+
+        return title + "<br><br>" + summary + "<br><br><hr><br>" + issuesTitle + "<br><br>" + report;
     }
 
     private int GetCommentDays(DateTime commentDate)

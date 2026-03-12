@@ -11,7 +11,7 @@
 
         public OpenIssuesReport Factory()
         {
-            return new OpenIssuesReport(_azureDevOpsApiConfig.BaseUrl, _azureDevOpsApiConfig.Collection, _azureDevOpsApiConfig.PAT);
+            return new OpenIssuesReport(_azureDevOpsApiConfig.BaseUrl, _azureDevOpsApiConfig.Collection, _azureDevOpsApiConfig.PAT, _azureDevOpsApiConfig.AreaTeam);
         }
     }
 }

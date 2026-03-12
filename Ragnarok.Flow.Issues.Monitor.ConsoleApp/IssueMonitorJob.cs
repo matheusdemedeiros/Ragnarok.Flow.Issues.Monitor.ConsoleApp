@@ -66,7 +66,8 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
                         return;
 
                     var title = await _azureDevOpsService.GetIssueTitle(item.Id);
-                    openIssuesReport.AddIssue(title!, item.Id, comment);
+                    var createdDate = await _azureDevOpsService.GetIssueCreatedDate(item.Id);
+                    openIssuesReport.AddIssue(title!, item.Id, comment, createdDate);
                 }
                 catch (Exception ex)
                 {

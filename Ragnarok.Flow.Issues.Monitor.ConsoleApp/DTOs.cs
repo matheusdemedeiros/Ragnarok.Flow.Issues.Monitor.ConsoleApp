@@ -42,7 +42,8 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
     );
 
     public record WorkItemFields(
-        [property: JsonProperty("System.Title")] string? Title
+        [property: JsonProperty("System.Title")] string? Title,
+        [property: JsonProperty("System.CreatedDate")] DateTime? CreatedDate
     );
 
     public record WorkItemDetailsResponse(
