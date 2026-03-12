@@ -11,3 +11,10 @@ public record MicrosoftTeamsConfig
 {
     public string WebhookUrl { get; init; }
 }
+
+public record WindowsServiceConfig
+{
+    public bool RunIssueMonitorOnStart { get; init; }
+    public string MonitorCronExpression { get; init; }
+    public bool EnableLogging { get; init; }
+}

@@ -20,7 +20,7 @@ try
         })
         .UseSerilog((context, services, configuration) =>
         {
-            var enableLogging = context.Configuration.GetValue<bool>("WindowsServiceConfigs:EnableLogging");
+            var enableLogging = services.GetService<WindowsServiceConfig>()?.EnableLogging ?? false;
 
             if (!enableLogging)
             {
@@ -34,14 +34,6 @@ try
         })
         .ConfigureServices((context, services) =>
         {
-            var cronExpression = context.Configuration["WindowsServiceConfigs:MonitorCronExpression"];
-            var runOnStart = context.Configuration.GetValue<bool>("WindowsServiceConfigs:RunIssueMonitorOnStart");
-
-            if (string.IsNullOrWhiteSpace(cronExpression))
-            {
-                throw new ArgumentException("A expressão CRON para o monitor de issues não pode estar vazia. Verifique o appsettings.json.");
-            }
-
             AzureDevOpsApiConfig azureDevOpsApiConfig = new();
             context.Configuration.Bind("AzureDevOpsApi", azureDevOpsApiConfig);
             services.AddSingleton(azureDevOpsApiConfig);
@@ -49,6 +41,15 @@ try
             MicrosoftTeamsConfig microsoftTeamsConfig = new();
             context.Configuration.Bind("MicrosoftTeams", microsoftTeamsConfig);
             services.AddSingleton(microsoftTeamsConfig);
+
+            WindowsServiceConfig windowsServiceConfig = new();
+            context.Configuration.Bind("WindowsServiceConfigs", windowsServiceConfig);
+            services.AddSingleton(windowsServiceConfig);
+
+            if (string.IsNullOrWhiteSpace(windowsServiceConfig.MonitorCronExpression))
+            {
+                throw new ArgumentException("A expressão CRON para o monitor de issues não pode estar vazia. Verifique o appsettings.json.");
+            }
 
             services.AddSingleton<AzureDevOpsAPI>();
             services.AddSingleton<AzureDevOpsService>();
@@ -64,9 +65,9 @@ try
                 q.AddTrigger(opts => opts
                     .ForJob(jobKey)
                     .WithIdentity("IssueMonitorJob-trigger")
-                    .WithCronSchedule(cronExpression, x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"))));
+                    .WithCronSchedule(windowsServiceConfig.MonitorCronExpression, x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"))));
 
-                if (runOnStart)
+                if (windowsServiceConfig.RunIssueMonitorOnStart)
                 {
                     q.AddTrigger(opts => opts
                         .ForJob(jobKey)
