@@ -15,13 +15,13 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
             _azureDevOpsBaseUrl = $"{_azureDevOpsApiConfig.BaseUrl}/{_azureDevOpsApiConfig.Collection}/{_azureDevOpsApiConfig.Project}";
         }
 
-        public async Task<WiqlResponse?> GetAllRagnarokOpenIssues()
+        public async Task<WiqlResponse?> GetAllOpenIssues()
         {
             using var httpClient = CreateHttpClient();
 
             var wiql = new
             {
-                query = @"
+                query = $@"
         SELECT 
             [System.Id],
             [System.Title]
@@ -29,7 +29,7 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
         WHERE
             [System.WorkItemType] = 'Issue'
             AND [System.State] <> 'Closed'
-            AND [System.AreaPath] UNDER 'nddPrint-360\\Ragnarök'"
+            AND [System.AreaPath] UNDER '{_azureDevOpsApiConfig.AreaTeam}'"
             };
 
             var wiqlResponse = await httpClient.PostAsync(

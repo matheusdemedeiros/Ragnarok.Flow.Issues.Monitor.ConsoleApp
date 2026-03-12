@@ -30,7 +30,7 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
             {
                 _logger.LogInformation("Iniciando execução do IssueMonitorJob em {time}", DateTime.Now);
 
-                var openIssues = await GetAllRagnarokOpenIssuesAsync();
+                var openIssues = await GetAllOpenIssuesAsync();
                 var report = await BuildIssuesReport(openIssues);
 
                 if (string.IsNullOrEmpty(report))
@@ -77,9 +77,9 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
             return openIssuesReport.BuildReport();
         }
 
-        private async Task<List<WorkItemRef>> GetAllRagnarokOpenIssuesAsync()
+        private async Task<List<WorkItemRef>> GetAllOpenIssuesAsync()
         {
-            return await _azureDevOpsService.GetAllRagnarokOpenIssues();
+            return await _azureDevOpsService.GetAllOpenIssues();
         }
     }
 }

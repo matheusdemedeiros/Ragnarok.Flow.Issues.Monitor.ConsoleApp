@@ -4,6 +4,7 @@
     public string Project { get; init; }
     public string BaseUrl { get; init; }
     public string PAT { get; init; }
+    public string AreaTeam { get; init; }
 }
 
 public record MicrosoftTeamsConfig

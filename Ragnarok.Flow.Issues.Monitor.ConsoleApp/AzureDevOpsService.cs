@@ -9,9 +9,9 @@
             _api = api;
         }
 
-        public async Task<List<WorkItemRef>> GetAllRagnarokOpenIssues()
+        public async Task<List<WorkItemRef>> GetAllOpenIssues()
         {
-            var issues = await _api.GetAllRagnarokOpenIssues();
+            var issues = await _api.GetAllOpenIssues();
 
             if (issues?.WorkItems == null || issues.WorkItems.Count == 0)
             {

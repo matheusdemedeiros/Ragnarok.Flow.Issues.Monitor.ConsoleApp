@@ -49,5 +49,4 @@ namespace Ragnarok.Flow.Issues.Monitor.ConsoleApp
         [property: JsonProperty("id")] int Id,
         [property: JsonProperty("fields")] WorkItemFields Fields
     );
-
 }
